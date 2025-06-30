@@ -19,8 +19,22 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
+
+// ✅ Allow multiple frontend origins (localhost + Vercel)
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://schoolmangement-opal.vercel.app',
+  'https://schoolmangement-8rewt0uyu-ag3291625-gmailcoms-projects.vercel.app'
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
@@ -36,7 +50,7 @@ const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-// Handle unhandled rejections
+// Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   console.log(`Error: ${err.message}`);
   server.close(() => process.exit(1));
